@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI</title>
+    <style>
+        .list {
+            list-style: none;
+            background-color: white;
+            border-radius: 2px;
+            width: 40%;
+            padding: 5px;
+            text-align: center;
+        }
+
+        button:hover {
+            background-color: blue;
+            color:white
+        }
+    </style>
+</head>
+
+<body>
+    <div
+        style="border:1px solid black; border-radius: 5px;background-color: lightblue; max-width:320px; margin: 0 auto; padding: 50px 10px; margin-top: 50px;">
+        <h1>Get Started</h1>
+        <form id="contact-form" style="width:100%">
+            <input type="text" id="contact" name="contact" placeholder=" Mobile / Email"
+                style="width: 100%; margin:0 auto; padding:8px 0px; border-radius: 2px; outline:none; border: 0;">
+            <br>
+            <button type="submit"
+                style="width: 100%; margin:10px auto; padding:8px; border-radius: 2px; outline:none; border: 0;">
+                Continue
+            </button>
+        </form>
+        <br>
+        <p style="margin: 0px 0px;">Or continue with:</p>
+        <ul style="margin:0px; padding:0px; display: flex; flex-direction:row; justify-content: space-between;">
+            <li class="list" style="border: 1px solid green;">
+                <div>
+                    <img width="18px" height="18px"
+                        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2zo52dkll1GmhIgOUAFVYYrRUivtvKnWaPOIMPQ3plw&s" />
+                    <span style="color:green; font-weight: bold; margin-left: 5px;"> WhatsApp</span>
+                </div>
+            </li>
+            <li class="list" style="border: 1px solid blue;">
+                <div>
+                    <img width="18px" height="18px"
+                        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRu1PJmT_THldF0n5APcmt9p10utgu6KSw4cH2fQ5Xhpw&s" />
+                    <span style="color:blue; font-weight: bold; margin-left: 5px;"> Google</span>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <script>
+        const form = document.querySelector('#contact-form');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault(); // prevent form submission
+
+            const contactInput = document.querySelector('#contact');
+            const contactValue = contactInput.value.trim();
+            let email;
+            let phoneNumber;
+
+            // check if input is email or phone number
+            if (contactValue.includes('@')) {
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    alert('Invalid phone number or email address.');
+                }
+                // email format
+                email = contactValue;
+            } else {
+                // phone number format
+                const phoneRegex = /^\d+$/; // only digits allowed
+                if (phoneRegex.test(contactValue) && contactValue.length == 10) {
+                    phoneNumber = contactValue;
+                } else {
+                    // invalid phone number
+                    alert('Invalid phone number or email address.');
+                    return;
+                }
+            }
+
+            // hit the API with email or phoneNumber value
+            const API_URL = 'http://localhost:3000/v1/users/sendOTP';
+            fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ email, phoneNumber }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (email != undefined)
+                        localStorage.setItem('email', email);
+
+                    if (phoneNumber != undefined)
+                        localStorage.setItem('phoneNumber', phoneNumber);
+
+                    window.location.href = 'otp.html';
+                })
+                .catch(error => {
+                    console.error(error.message);
+                });
+        });
+    </script>
+
+</body>
+
+</html>

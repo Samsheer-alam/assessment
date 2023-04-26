@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Phone Number List</title>
+    <style>
+        li {
+            list-style: none;
+            width:100%
+        }
+        input, button {
+            margin:0 auto; padding:8px 2px; border-radius: 2px; outline:none; border: 0;
+        }
+        button:hover {
+            background-color: orange;
+            color:white
+        }
+    </style>
+</head>
+
+<body>
+    <div
+        style="border:1px solid black; border-radius: 5px;background-color: lightblue; max-width:320px; margin: 0 auto; padding: 50px 10px; margin-top: 50px;">
+
+        <h3>Mobile Number List</h3>
+        <div id="phone-list-container" style="width:100%">
+            <ul id="phone-list" style="margin:0; padding:0"></ul>
+        </div>
+        <div>
+            <script>
+                const API_URL = 'http://localhost:3000/v1/users';
+                const token = localStorage.getItem('token');
+
+                fetch(API_URL, { headers: { 'Authorization': 'Bearer ' + token } })
+                    .then(response => response.json())
+                    .then(data => {
+                        const phoneList = document.getElementById('phone-list');
+                        data.data.forEach(item => {
+                            const listItem = document.createElement('li');
+                            const phoneInput = document.createElement('input');
+                            phoneInput.type = 'text';
+                            phoneInput.value = item.phoneNumber;
+                            const deleteButton = document.createElement('button');
+                            deleteButton.innerText = 'Delete';
+                            deleteButton.addEventListener('click', () => {
+                                fetch(`${API_URL}/${item._id}`, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (data.status == 200) {
+                                            listItem.remove();
+                                        }
+                                    })
+                                    .catch(error => console.error(error));
+                            });
+
+                            listItem.appendChild(phoneInput);
+                            listItem.appendChild(deleteButton);
+                            phoneList.appendChild(listItem);
+                        });
+                    })
+                    .catch(error => console.error(error));
+            </script>
+</body>
+
+</html>

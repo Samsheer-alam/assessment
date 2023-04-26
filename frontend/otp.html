@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Enter OTP</title>
+    <style>
+        .timer {
+            font-weight: bold;
+            color: gray;
+        }
+        button:hover {
+            background-color: blue;
+            color:white
+        }
+    </style>
+</head>
+
+<body>
+    <div
+        style="border:1px solid black; border-radius: 5px;background-color: lightblue; max-width:320px; margin: 0 auto; padding: 50px 10px; margin-top: 50px;">
+        <h1>Enter OTP</h1>
+        <p id="otptext" style="color:gray"></p>
+        <form>
+            <input type="number" id="otp" name="otp" min="1000" max="9999" required placeholder=" OTP"
+                style="width: 100%; margin:0 auto; padding:8px 0px; border-radius: 2px; outline:none; border: 0;">
+        </form>
+        <br><br>
+        <p class="timer">Time remaining: 2:00</p>
+        <button type="button" id="resend" disabled>Resend OTP</button>
+    </div>
+    <script>
+        // set timer for 2 minutes
+        let timeLeft = 1;
+        const timer = document.querySelector('.timer');
+        const email = localStorage.getItem('email') == null ? undefined : localStorage.getItem('email');
+        const phoneNumber = localStorage.getItem('phoneNumber') == null ? undefined : localStorage.getItem('phoneNumber');
+        const otptext = document.querySelector('#otptext');
+
+        let str = phoneNumber != undefined ? phoneNumber : email;
+        let textResult = '';
+        for (let i = 0; i < str.length - 4; i++) {
+            textResult += 'x';
+        }
+        textResult += str.slice(-4);
+        otptext.textContent = `We have sent one time password (OTP) to ${textResult}`;
+
+        const intervalId = setInterval(() => {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timer.textContent = `Time remaining: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+            timeLeft--;
+            // disable resend button after 2 minutes
+            if (timeLeft < 0) {
+                clearInterval(intervalId);
+                timer.textContent = 'Time up!';
+                const resendBtn = document.querySelector('#resend');
+                resendBtn.disabled = false;
+            }
+        }, 1000);
+
+        const otpInput = document.querySelector('#otp');
+        otpInput.addEventListener('input', () => {
+            const otpValue = otpInput.value.trim();
+
+            // check if OTP is valid
+            const otpRegex = /^\d{4}$/; // 4-digit OTP
+            if (otpRegex.test(otpValue)) {
+                clearInterval(intervalId); // stop timer
+
+                const API_URL = 'http://localhost:3000/v1/users/login';
+
+                fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ email, phoneNumber, otp: Number(otpValue) }),
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        localStorage.setItem('token', data?.data?.token);
+                        window.location.href = 'list.html';
+                    })
+                    .catch(error => {
+                        alert(error.message);
+                    });
+            }
+        });
+
+        const resendBtn = document.querySelector('#resend');
+        resendBtn.addEventListener('click', () => {
+            const API_URL = 'http://localhost:3000/v1/users/sendOTP';
+            fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ email, phoneNumber }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (email != undefined)
+                        localStorage.setItem('email', email);
+
+                    if (phoneNumber != undefined)
+                        localStorage.setItem('phoneNumber', phoneNumber);
+
+                    window.location.href = 'otp.html';
+                })
+                .catch(error => {
+                    console.error(error.message);
+                });
+            // reset timer and disable resend button
+            timeLeft = 120;
+            resendBtn.disabled = true;
+            clearInterval(intervalId);
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timer.textContent = `Time remaining: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+            intervalId = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timer.textContent = `Time remaining: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+                timeLeft--;
+                // disable resend button after 2 minutes
+                if (timeLeft < 0) {
+                    clearInterval(intervalId);
+                    timer.textContent = 'Time up!';
+                    resendBtn.disabled = false;
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+
+</html>
