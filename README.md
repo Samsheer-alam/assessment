@@ -11,3 +11,11 @@ Installation
 Starting the Server
 1. To start the backend server, run npm run dev in the terminal.
 2. To access the UI page, open index.html located inside the frontend folder in your browser.
+
+Here are some of the ways using which we can handle millions of user
+1. Database optimization: indexing the required fields
+2. Load balancing: distribute the workload across multiple servers, which will ensure that the application is not overloaded with too many requests and can handle a large number of users.
+3. Caching: By caching frequently accessed data, we can reduce the number of requests made to the database, resulting in faster response times.
+4. Horizontal Scaling: adding more servers to the system as the user base grows.
+
+
